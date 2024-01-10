@@ -5,13 +5,15 @@ The very first step is to create a binary rust project.
 cargo new zilliqa-rs-demo
 ```
 
-# Add zilliqa-rs and tokio to dependencies
+then we need to add zilliqa-rs and tokio to dependencies:
+
 ```bash
 cargo add zilliqa-rs tokio
 ```
 
 # Call a simple JSON-RPC API
 ## Run the isolated-server using docker
+Here we run an isolated server using docker to use as the target network, but you can use any zilliqa network you want.
 ```bash
 docker run -d -p 5555:5555 --name iso-server zilliqa-isolated-server:latest
 ```
@@ -49,7 +51,7 @@ We want to deploy a simple contract named `HelloWorld` and call its `setHello` t
 [env]
 CONTRACTS_PATH = {value = "contracts", relative = true}
 ```
-setting `relative` to `true` is crucial. Otherwise, your scilla contracts won't be transpiled to rust. Now, if build the project using `cargo build`, your HelloWorld.scilla gets converted to rust under the hood.
+setting `relative` to `true` is crucial. Otherwise, your scilla contracts won't be transpiled to rust. Now, if you build the project using `cargo build`, your HelloWorld.scilla gets converted to rust under the hood.
 
 The generated code is something like this:
 
@@ -133,6 +135,44 @@ Pay attention, here we need to call `call` too. That's because everything you do
 OK, now if you get and print `welcome_msg` it should have the new value:
 ```rust
     println!("Welcome msg: {}", contract.welcome_msg().await?);
+```
+The final main code is:
+```rust
+use std::error::Error;
+
+use zilliqa_rs::{
+    contract::HelloWorld,
+    middlewares::Middleware,
+    providers::{Http, Provider},
+    signers::LocalWallet,
+};
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn Error>> {
+    let wallet = "0xe53d1c3edaffc7a7bab5418eb836cf75819a82872b4a1a0f1c7fcf5c3e020b89"
+        .parse::<LocalWallet>()?;
+
+    let provider = Provider::<Http>::try_from("http://127.0.0.1:5555")?
+        .with_chain_id(222)
+        .with_signer(wallet.clone());
+
+    let balance = provider
+        .get_balance("0x381f4008505e940ad7681ec3468a719060caf796")
+        .await;
+
+    println!("{balance:?}");
+
+    let contract = HelloWorld::deploy(provider.into(), wallet.address).await?;
+    println!("Contract address: {:?}", contract.address());
+
+    println!("Contract owner: {:?}", contract.owner().await?);
+    println!("Welcome msg: {}", contract.welcome_msg().await?);
+
+    contract.set_hello("Salaam".to_string()).call().await?;
+    println!("Welcome msg: {}", contract.welcome_msg().await?);
+    Ok(())
+}
+
 ```
 
 Let's run the code:

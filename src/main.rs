@@ -1,9 +1,11 @@
 use std::error::Error;
 
-use zilliqa_rs::contract::HelloWorld;
-use zilliqa_rs::middlewares::Middleware;
-use zilliqa_rs::providers::{Http, Provider};
-use zilliqa_rs::signers::LocalWallet;
+use zilliqa_rs::{
+    contract::HelloWorld,
+    middlewares::Middleware,
+    providers::{Http, Provider},
+    signers::LocalWallet,
+};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
