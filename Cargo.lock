@@ -2220,7 +2220,6 @@ checksum = "525b4ec142c6b68a2d10f01f7bbf6755599ca3f81ea53b8431b7dd348f5fdb2d"
 [[package]]
 name = "zilliqa-rs"
 version = "0.1.0"
-source = "git+https://github.com/Zilliqa/zilliqa-rs.git?branch=use-scilla-parser-from-crates-io#546da2c5daa2aea19aad182e6c0115403e047cea"
 dependencies = [
  "anyhow",
  "async-trait",
